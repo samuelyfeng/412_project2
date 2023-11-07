@@ -251,10 +251,25 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: We decided to evaluate the function based on the food and score. The overall goal is to maximize the score and we can better evaluate performance with these two variables. The pacman should have the intention to maximize its score as well as obtain food which also inherently increases score. If pacman prioiritizes these factors then score should be maximized.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    pacmanPos = currentGameState.getPacmanPosition()
+    score = currentGameState.getScore()
+    
+    foodGrid = currentGameState.getFood()
+    foodList = foodGrid.asList()
+    
+    if(len(foodList) > 0) :
+        minFoodDistance = min([manhattanDistance(pacmanPos, food) for food in foodList])
+    else:
+        minFoodDistance = 1
+
+        
+    return score + 1/minFoodDistance
+    
+    # util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction
