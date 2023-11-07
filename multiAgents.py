@@ -255,14 +255,14 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     
-    pacmanPos = currentGameState.getPacmanPosition()
+    pacman = currentGameState.getPacmanPosition()
     score = currentGameState.getScore()
     
-    foodGrid = currentGameState.getFood()
-    foodList = foodGrid.asList()
+    foodDis = currentGameState.getFood()
+    foodList = foodDis.asList()
     
     if(len(foodList) > 0) :
-        minFoodDistance = min([manhattanDistance(pacmanPos, food) for food in foodList])
+        minFoodDistance = min([manhattanDistance(pacman, food) for food in foodList])
     else:
         minFoodDistance = 1
 
