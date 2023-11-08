@@ -74,21 +74,26 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        score = 0
         
+        #location as coordinates stored in a list
         newFoodList = newFood.asList()
         
+        #distance of each food in the list
         foodDis = [manhattanDistance(newPos, food) for food in newFoodList]
         
+        score = 0
+        
         if(len(foodDis) > 0):
-            min_food = min(foodDis)
+            minFood = min(foodDis)
         else:
-            min_food = 1
+            minFood = 1
 
-        score += 1 / min_food
+        #score increases inversely to distance (reward for being closer to food)
+        score += 1 / minFood
         
         return successorGameState.getScore() + score
-        return successorGameState.getScore()
+
+        #util.raiseNotDefined()
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -162,9 +167,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
+        
         scores = []
-        a = -float("inf")
-        b = float("inf")
+        
+        a = -float("inf") #alpha
+        b = float("inf") #beta
 
         for action in gameState.getLegalActions(0):
             newState = gameState.generateSuccessor(0, action)
@@ -181,34 +188,37 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def maxValue(self, gameState, currentDepth, a, b):
       
-        legalMoves = gameState.getLegalActions(0)
         if gameState.isWin() or gameState.isLose() or currentDepth < 1:
             return self.evaluationFunction(gameState)
         
+        actions = gameState.getLegalActions(0)
+        
         scores = []
         
-        for action in legalMoves:
+        for action in actions:
             scores.append(self.minValue(gameState.generateSuccessor(0, action), currentDepth, 1, a, b))
             maximum = max(scores)
+            
             if maximum > b:
                 return maximum
+            
             a = max(maximum, a)
 
         if scores:
-            return max(scores)
+            return maximum
         else:
             return -float("inf")
 
     def minValue(self, gameState, currentDepth, ghostIdx, a, b):
       
-        legalMoves = gameState.getLegalActions(ghostIdx)
-        
         if gameState.isWin() or gameState.isLose():
             return self.evaluationFunction(gameState)
-
+        
+        actions = gameState.getLegalActions(ghostIdx)
+        
         scores = []
         
-        for action in legalMoves:
+        for action in actions:
             ghostState = gameState.generateSuccessor(ghostIdx, action)
 
             if ghostIdx == gameState.getNumAgents() - 1:
@@ -217,8 +227,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 newVal = self.minValue(ghostState, currentDepth, ghostIdx + 1, a, b)
 
             scores.append(newVal)
-
             minimum = min(scores)
+            
             if minimum < a:
                 return minimum
 
@@ -228,7 +238,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             return minimum
         else:
             return float("inf")
-            
+       
         #util.raiseNotDefined()
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -255,21 +265,25 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     
-    pacman = currentGameState.getPacmanPosition()
-    score = currentGameState.getScore()
+    pacman = currentGameState.getPacmanPosition()    
     
-    foodDis = currentGameState.getFood()
-    foodList = foodDis.asList()
+    foodPos = currentGameState.getFood()
+    foodList = foodPos.asList()
+    
+    #store distances from food
+    foodDis = [manhattanDistance(pacman, food) for food in foodList]
     
     if(len(foodList) > 0) :
-        minFoodDistance = min([manhattanDistance(pacman, food) for food in foodList])
+        minFood = min(foodDis)
     else:
-        minFoodDistance = 1
-
+        minFood = 1
         
-    return score + 1/minFoodDistance
-    
-    # util.raiseNotDefined()
+    score = currentGameState.getScore()
+
+    #the closer food is, it increases score by the inverse relationship to distance    
+    return score + 1/minFood
+
+    #util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction
