@@ -29,6 +29,7 @@ class ReflexAgent(Agent):
     """
 
 
+
     def getAction(self, gameState):
         """
         You do not need to change this method, but you're welcome to.
@@ -135,7 +136,51 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        def isTerminalState(gameState, depth):
+            return gameState.isWin() or gameState.isLose() or depth == 0
+
+        def minValue(gameState, depth, ghostIndex):
+            if isTerminalState(gameState, depth):
+                return self.evaluationFunction(gameState)
+
+            value = float("inf")
+            for action in gameState.getLegalActions(ghostIndex):
+                successor = gameState.generateSuccessor(ghostIndex, action)
+                if ghostIndex == gameState.getNumAgents() - 1:
+                    value = min(value, maxValue(successor, depth - 1))
+                else:
+                    value = min(value, minValue(successor, depth, ghostIndex + 1))
+            return value
+
+        def maxValue(gameState, depth):
+            if isTerminalState(gameState, depth):
+                return self.evaluationFunction(gameState)
+
+            value = -float("inf")
+            for action in gameState.getLegalActions(self.index):
+                if action != Directions.STOP:
+                    successor = gameState.generateSuccessor(self.index, action)
+                    value = max(value, minValue(successor, depth, 1))
+            return value
+
+        # Initialize best action to the first legal action
+        legalActions = gameState.getLegalActions(self.index)
+        bestAction = Directions.STOP if Directions.STOP in legalActions else legalActions[0]
+        maxUtility = -float("inf")
+
+        # Evaluate the minimax utility for each legal action
+        for action in legalActions:
+            if action != Directions.STOP:
+                successor = gameState.generateSuccessor(self.index, action)
+                utility = minValue(successor, self.depth, 1)
+                if utility > maxUtility:
+                    maxUtility = utility
+                    bestAction = action
+
+        # Return the action with the highest utility
+        return bestAction
+            
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -162,7 +207,54 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+
+        def isTerminalState(gameState, depth):
+            return gameState.isWin() or gameState.isLose() or depth == 0
+
+        # Expected value for the ghosts
+        def getExpectedValue(gameState, depth, ghostIndex):
+            if isTerminalState(gameState, depth):
+                return self.evaluationFunction(gameState)
+
+            totalValue = 0
+            actionList = gameState.getLegalActions(ghostIndex)
+            probability = 1.0 / len(actionList)
+            nextGhostIndex = ghostIndex + 1 if ghostIndex < gameState.getNumAgents() - 1 else self.index
+
+            for action in actionList:
+                successor = gameState.generateSuccessor(ghostIndex, action)
+                if ghostIndex < gameState.getNumAgents() - 1:
+                    totalValue += probability * getExpectedValue(successor, depth, nextGhostIndex)
+                else:
+                    totalValue += probability * getMaxValue(successor, depth - 1)
+            return totalValue
+
+        # Max value for Pacman
+        def getMaxValue(gameState, depth):
+            if isTerminalState(gameState, depth):
+                return self.evaluationFunction(gameState)
+
+            value = -float("inf")
+            for action in gameState.getLegalActions(self.index):
+                if action != Directions.STOP:
+                    successor = gameState.generateSuccessor(self.index, action)
+                    value = max(value, getExpectedValue(successor, depth, 1))
+            return value
+
+        # Get the best action for Pacman
+        legalActions = [action for action in gameState.getLegalActions(self.index) if action != Directions.STOP]
+        bestAction = None
+        maxUtility = -float("inf")
+
+        for action in legalActions:
+            successor = gameState.generateSuccessor(self.index, action)
+            utility = getExpectedValue(successor, self.depth, 1)
+            if utility > maxUtility:
+                maxUtility = utility
+                bestAction = action
+
+        return bestAction if bestAction is not None else Directions.STOP
 
 def betterEvaluationFunction(currentGameState):
     """
